@@ -35,7 +35,6 @@ import android.os.PowerManager.WakeLock;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.util.Log;
 import com.android.bluetooth.btservice.AdapterService;
 import com.android.bluetooth.btservice.ProfileService;
@@ -342,10 +341,7 @@ final class Avrcp {
 
     private void updateMetadata(Bundle data) {
         String oldMetadata = mMetadata.toString();
-        mMetadata.artist = getMdString(data, MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        if (TextUtils.isEmpty(mMetadata.artist)) {
-            mMetadata.artist = getMdString(data, MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);
-        }
+        mMetadata.artist = getMdString(data, MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);
         mMetadata.trackTitle = getMdString(data, MediaMetadataRetriever.METADATA_KEY_TITLE);
         mMetadata.albumTitle = getMdString(data, MediaMetadataRetriever.METADATA_KEY_ALBUM);
         if (!oldMetadata.equals(mMetadata.toString())) {
@@ -428,17 +424,9 @@ final class Avrcp {
 
     private void sendTrackChangedRsp() {
         byte[] track = new byte[TRACK_ID_SIZE];
-        long TrackNumberRsp = -1L;
-
-        if(DEBUG) Log.v(TAG,"mCurrentPlayState" + mCurrentPlayState );
-        /*As per spec 6.7.2 Register Notification
-          If no track is currently selected, then return
-         0xFFFFFFFFFFFFFFFF in the interim response */
-        if (mCurrentPlayState == RemoteControlClient.PLAYSTATE_PLAYING)
-            TrackNumberRsp = mTrackNumber ;
         /* track is stored in big endian format */
         for (int i = 0; i < TRACK_ID_SIZE; ++i) {
-            track[i] = (byte) (TrackNumberRsp >> (56 - 8 * i));
+            track[i] = (byte) (mTrackNumber >> (56 - 8 * i));
         }
         registerNotificationRspTrackChangeNative(mTrackChangedNT, track);
     }
